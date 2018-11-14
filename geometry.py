@@ -15,16 +15,17 @@ def project_to_tangent(point_on_manifold, displacement, geometry="spherical"):
         Inputs: point_on_manifold, an n-D vector in embedding space
                 displacement, an n-D vector of the displacement from point_on_manifold
     '''
-    print("point_on_manifold = {}, displacement = {}".format(
+    print("project_to_tangent: point_on_manifold = {}, displacement = {}, geometry = {}".format(
             point_on_manifold, 
-            displacement
+            displacement,
+            geometry
            )
          )
 
 
     xp_dot = dot(point_on_manifold, displacement, geometry)
     xx_dot = dot(point_on_manifold, point_on_manifold, geometry)
-    print("xp_norm = {}, xx_norm = {}".format(xp_dot, xx_dot))
+    print("project_to_tangent: xp_norm = {}, xx_norm = {}".format(xp_dot, xx_dot))
     return displacement - (xp_dot/xx_dot)*point_on_manifold
 
 def exponential_map(v_tan, point_on_manifold, geometry="spherical"):
@@ -35,7 +36,9 @@ def exponential_map(v_tan, point_on_manifold, geometry="spherical"):
                 point_on_manifold is the initial n-D point on the manifold, an np.array
     '''
     norm_v_tan = np.sqrt(dot(v_tan, v_tan, geometry))
-    #print("norm_v_tan = ", norm_v_tan)
+    print("exponential_map: norm_v_tan = ", norm_v_tan)
+    if abs(norm_v_tan) < 1e-8:
+        return point_on_manifold
     if geometry == "spherical":
         return np.cos(norm_v_tan)*point_on_manifold + (np.sin(norm_v_tan)/norm_v_tan)*v_tan
     elif geometry == "hyperbolic":
