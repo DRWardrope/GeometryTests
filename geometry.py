@@ -5,12 +5,9 @@ def dot(u, v, geometry="spherical"):
         Inputs: u, v: two vectors, represented as np.arrays
         Outputs: dot_product, a 1-D real number
     '''
-    if geometry == "spherical" or geometry == "euclidean":
-        return u.dot(v)
-    elif geometry == "hyperbolic":
-        return u[:-1].dot(v[:-1])-u[-1]*v[-1]
-    else:
-        print("geometry = {} is not a valid option! Try 'spherical' or 'hyperbolic'".format(geometry))
+    metric = get_metric(u.shape[0], geometry)
+    return u.dot(metric.dot(v))
+ 
 
 def project_to_tangent(point_on_manifold, displacement, geometry="spherical"):
     '''
@@ -18,9 +15,16 @@ def project_to_tangent(point_on_manifold, displacement, geometry="spherical"):
         Inputs: point_on_manifold, an n-D vector in embedding space
                 displacement, an n-D vector of the displacement from point_on_manifold
     '''
+    print("point_on_manifold = {}, displacement = {}".format(
+            point_on_manifold, 
+            displacement
+           )
+         )
+
+
     xp_dot = dot(point_on_manifold, displacement, geometry)
     xx_dot = dot(point_on_manifold, point_on_manifold, geometry)
-#    print("xp_norm = {}, xx_norm = {}".format(xp_norm, xx_norm))
+    print("xp_norm = {}, xx_norm = {}".format(xp_dot, xx_dot))
     return displacement - (xp_dot/xx_dot)*point_on_manifold
 
 def exponential_map(v_tan, point_on_manifold, geometry="spherical"):
@@ -31,7 +35,7 @@ def exponential_map(v_tan, point_on_manifold, geometry="spherical"):
                 point_on_manifold is the initial n-D point on the manifold, an np.array
     '''
     norm_v_tan = np.sqrt(dot(v_tan, v_tan, geometry))
-    print("norm_v_tan = ", norm_v_tan)
+    #print("norm_v_tan = ", norm_v_tan)
     if geometry == "spherical":
         return np.cos(norm_v_tan)*point_on_manifold + (np.sin(norm_v_tan)/norm_v_tan)*v_tan
     elif geometry == "hyperbolic":
@@ -54,3 +58,23 @@ def distance(u, v, geometry="spherical"):
         return np.sqrt(dot(u-v, u-v, geometry))
     else:
         print("geometry = {} is not a valid option! Try 'spherical' or 'hyperbolic'".format(geometry))
+        
+def get_metric(dimension, geometry="euclidean"):
+    '''
+        Form metric for various geometries.
+        Inputs: dimension: an integer specifying size of square metric matrix
+        Outputs: (d x d) np.array containing the metric terms
+    '''
+    metric = np.eye(dimension)
+    if geometry == "hyperbolic":        
+        metric[-1, -1] = -1.
+    elif geometry == "euclidean":
+        pass
+    elif geometry == "spherical":
+        #This probably needs to be renamed, since it's not in terms of r, θ, φ
+        pass
+    else:
+        print("geometry = {} is not a valid option! Try 'spherical' or 'hyperbolic'".format(geometry))
+        return np.zeros([dimension, dimension])
+
+    return metric
