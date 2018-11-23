@@ -9,6 +9,24 @@ def dot(u, v, geometry="spherical"):
     return u.dot(metric.dot(v))
  
 
+def project_to_tangent_old(point_on_manifold, displacement, geometry="spherical"):
+    '''
+        Given a displacement, project onto tangent space defined at point_on_manifold
+        Inputs: point_on_manifold, an n-D vector in embedding space
+                displacement, an n-D vector of the displacement from point_on_manifold
+    '''
+    print("project_to_tangent: point_on_manifold = {}, displacement = {}, geometry = {}".format(
+            point_on_manifold, 
+            displacement,
+            geometry
+           )
+         )
+
+    xp_dot = dot(point_on_manifold, displacement, geometry)
+    xx_dot = dot(point_on_manifold, point_on_manifold, geometry)
+    print("project_to_tangent: xp_norm = {}, xx_norm = {}".format(xp_dot, xx_dot))
+    return displacement - (xp_dot/xx_dot)*point_on_manifold
+
 def project_to_tangent(point_on_manifold, displacement, geometry="spherical"):
     '''
         Given a displacement, project onto tangent space defined at point_on_manifold
@@ -22,12 +40,14 @@ def project_to_tangent(point_on_manifold, displacement, geometry="spherical"):
            )
          )
 
-
     xp_dot = dot(point_on_manifold, displacement, geometry)
-    xx_dot = dot(point_on_manifold, point_on_manifold, geometry)
+    xx_dot = +1.
+    if geometry in "hyperbolic":
+        xx_dot = -1.
     print("project_to_tangent: xp_norm = {}, xx_norm = {}".format(xp_dot, xx_dot))
     return displacement - (xp_dot/xx_dot)*point_on_manifold
 
+        
 def exponential_map(v_tan, point_on_manifold, geometry="spherical"):
     '''
         Projects vector from tangent space of point_on_manifold onto manifold
