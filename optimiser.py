@@ -1,3 +1,4 @@
+import numpy as np
 from geometry import *
 def gradient_descent(
                         pt_i, target, differential_fn, 
@@ -15,16 +16,16 @@ def gradient_descent(
                 differential_fn: function that calculates the derivative
                 learning_rate: dictates how far to step in gradient direction
     '''
-    print("gradient_descent({},{},{},{},{},{},{}):".format(
-                type(pt_i), type(target), differential_fn, geometry, learning_rate, return_vectors, test_rel_correction
-            )
-         )
+#    print("gradient_descent({},{},{},{},{},{},{}):".format(
+#                type(pt_i), type(target), differential_fn, geometry, learning_rate, return_vectors, test_rel_correction
+#            )
+#         )
     # Calculate gradient in ambient space co-ordinates
     step = differential_fn(pt_i, target, geometry)
-    print("gradient_descent: step =",step)
+#    print("gradient_descent: step =",step)
     # Project this gradient onto tangent space
     projection = project_to_tangent(pt_i, step, geometry)
-    print("gradient_descent: projection on tangent space = ",projection)
+#    print("gradient_descent: projection on tangent space = ",projection)
     # Map to manifold and return this updated pt
     if return_vectors:
         return (
@@ -52,9 +53,9 @@ def error_differential_eucl(u, v, geometry="hyperbolic"):
     metric = get_metric(u.shape[0], geometry)
     print("u = {}, v = {}, u.v = {}".format(u, v, dot(u, v, geometry)))
     if geometry == "spherical":
-        coeff = -1./np.sqrt(1.-dot(u, v, geometry)**2)
+        coeff = -1./(np.sqrt(1.-dot(u, v, geometry)**2)+1e-10)
     elif geometry == "hyperbolic":        
-        coeff = 1./np.sqrt(dot(u, v, geometry)**2-1.)
+        coeff = 1./(np.sqrt(dot(u, v, geometry)**2-1.)+1e10)
     else:
         print("geometry = {} is not a valid option! Try 'spherical' or 'hyperbolic'".format(geometry))
 
@@ -79,15 +80,15 @@ def frechet_diff(p_eval, points, geometry="spherical"):
     '''
     metric = get_metric(p_eval.shape[0], geometry)
     update = np.zeros(p_eval.shape[0])
-    print("frechet_diff: p_eval =", p_eval)
+#    print("frechet_diff: p_eval =", p_eval)
     for xi in points:
-        print("frechet_diff: xi =", xi)
+#        print("frechet_diff: xi =", xi)
         coeff = -2.*distance(p_eval, xi, geometry)
         if geometry == "spherical":
-            coeff /= np.sqrt(1.-dot(p_eval, xi, geometry)**2)
+            coeff /= np.sqrt(1.-dot(p_eval, xi, geometry)**2)+ 1.e-10
         elif geometry == "hyperbolic":
             coeff /= np.sqrt(dot(p_eval, xi, geometry)**2-1.)
-        print("frechet_diff: update from xi =", coeff*metric.dot(xi))
+#        print("frechet_diff: update from xi =", coeff*metric.dot(xi))
 #        update += coeff*metric.dot(xi)
         update += coeff*xi
     return update
