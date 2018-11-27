@@ -14,6 +14,10 @@ def project_to_tangent_old(point_on_manifold, displacement, geometry="spherical"
         Given a displacement, project onto tangent space defined at point_on_manifold
         Inputs: point_on_manifold, an n-D vector in embedding space
                 displacement, an n-D vector of the displacement from point_on_manifold
+        Outputs: n-D vector in tangent space
+        NOTE: This explicitly calculates <x,x>, which is somewhat wasteful and a potential
+            source of inaccuracy, since <x, x> = 1 if x is on spherical manifold, or =-1 on
+            hyperboloid
     '''
     print("project_to_tangent: point_on_manifold = {}, displacement = {}, geometry = {}".format(
             point_on_manifold, 
@@ -41,9 +45,9 @@ def project_to_tangent(point_on_manifold, displacement, geometry="spherical"):
          )
 
     xp_dot = dot(point_on_manifold, displacement, geometry)
-    xx_dot = +1.
+    xx_dot = +1. #if on spherical manifold
     if geometry in "hyperbolic":
-        xx_dot = -1.
+        xx_dot = -1. #if on hyperboloid manifold
     print("project_to_tangent: xp_norm = {}, xx_norm = {}".format(xp_dot, xx_dot))
     return displacement - (xp_dot/xx_dot)*point_on_manifold
 
