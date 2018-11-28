@@ -1,12 +1,12 @@
 import numpy as np
 def dot(u, v, geometry="spherical"):
     '''
-        Calculate dot_product for two n-D vectors, u and v
-        Inputs: u, v: two vectors, represented as np.arrays
-        Outputs: dot_product, a 1-D real number
+        Calculate dot_product for two sets of m n-dimensional vectors, u and v
+        Inputs: u, v: two arrays containing m n-dim vectors, as columns or rows
+        Outputs: a 1-D array of real numbers corresponding to the dot products
     '''
     metric = get_metric(u.shape[0], geometry)
-    return u.dot(metric.dot(v))
+    return np.squeeze(np.diag(u.T.dot(metric.dot(v))))  
  
 
 def project_to_tangent_old(point_on_manifold, displacement, geometry="spherical"):
