@@ -77,6 +77,9 @@ def distance(u, v, geometry="spherical"):
         Outputs: distance, a 1-D real number
     '''   
     dotprod = dot(u,v,geometry)
+    if np.abs(dotprod) > 1:
+        print("distance: {}.{} = {:.3g}".format(u, v, dotprod))
+    
     if geometry == "spherical":
         return np.arccos(dotprod)
     elif geometry == "hyperbolic":
