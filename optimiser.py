@@ -50,7 +50,6 @@ def error_differential_eucl(u, v, geometry="hyperbolic"):
     if np.array_equal(u,v):
         return np.zeros(u.shape)
     # If u and v are different, calculate the gradient
-    metric = get_metric(u.shape[0], geometry)
     print("u = {}, v = {}, u.v = {}".format(u, v, dot(u, v, geometry)))
     if geometry == "spherical":
         coeff = -1./(np.sqrt(1.-dot(u, v, geometry)**2)+1e-10)
@@ -59,6 +58,7 @@ def error_differential_eucl(u, v, geometry="hyperbolic"):
     else:
         print("geometry = {} is not a valid option! Try 'spherical' or 'hyperbolic'".format(geometry))
 
+    metric = get_metric(u.shape[0], geometry)
     return coeff*metric.dot(v)
 
 def frechet_diff(p_eval, points, geometry="spherical"):
@@ -80,8 +80,10 @@ def frechet_diff(p_eval, points, geometry="spherical"):
     '''
     metric = get_metric(p_eval.shape[0], geometry)
     update = np.zeros(p_eval.shape[0])
-#    print("frechet_diff: p_eval =", p_eval)
+    print("frechet_diff: p_eval = {}, points = {}".format(p_eval, points))
     for xi in points:
+        if np.array_equal(p_eval,xi):
+           continue 
 #        print("frechet_diff: xi =", xi)
         coeff = -2.*distance(p_eval, xi, geometry)
         if geometry == "spherical":
@@ -91,4 +93,5 @@ def frechet_diff(p_eval, points, geometry="spherical"):
 #        print("frechet_diff: update from xi =", coeff*metric.dot(xi))
 #        update += coeff*metric.dot(xi)
         update += coeff*xi
+    print("frechet_diff: update = {}".format(update))
     return update
