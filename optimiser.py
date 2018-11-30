@@ -4,7 +4,7 @@ def gradient_descent(
                         pt_i, target, differential_fn, 
                         geometry="hyperbolic", learning_rate=1.,
                         return_vectors=False,
-                        test_rel_correction=False
+                        test_rel_correction=False,
                     ):
     '''
         Calculate local gradient of differential, given the current pt and the target.
