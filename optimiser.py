@@ -80,7 +80,7 @@ def frechet_diff(p_eval, points, geometry="spherical"):
     '''
     metric = get_metric(p_eval.shape[0], geometry)
     update = np.zeros(p_eval.shape[0])
-    print("frechet_diff: p_eval = {}, points = {}".format(p_eval, points))
+#    print("frechet_diff: p_eval = {}, points = {}".format(p_eval, points))
     for xi in points:
         if np.array_equal(p_eval,xi):
            continue 
@@ -93,5 +93,5 @@ def frechet_diff(p_eval, points, geometry="spherical"):
 #        print("frechet_diff: update from xi =", coeff*metric.dot(xi))
 #        update += coeff*metric.dot(xi)
         update += coeff*xi
-    print("frechet_diff: update = {}".format(update))
+#    print("frechet_diff: update = {}".format(update))
     return update
