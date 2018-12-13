@@ -6,7 +6,11 @@ def dot(u, v, geometry="spherical"):
         Outputs: dot_product, a 1-D real number
     '''
     metric = get_metric(u.shape[0], geometry)
-    return u.dot(metric.dot(v))
+    print("u.T.shape = {}, v.shape = {}, metric.shape = {}".format(
+                u.T.shape, v.shape, metric.shape,
+            )
+        )
+    return u.T.dot(metric.dot(v))
  
 
 def project_to_tangent_old(point_on_manifold, displacement, geometry="spherical"):
