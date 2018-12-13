@@ -6,10 +6,10 @@ def dot(u, v, geometry="spherical"):
         Outputs: dot_product, a 1-D real number
     '''
     metric = get_metric(u.shape[0], geometry)
-    print("u.T.shape = {}, v.shape = {}, metric.shape = {}".format(
-                u.T.shape, v.shape, metric.shape,
-            )
-        )
+    #print("u.T.shape = {}, v.shape = {}, metric.shape = {}".format(
+    #            u.T.shape, v.shape, metric.shape,
+    #        )
+    #    )
     return u.T.dot(metric.dot(v))
  
 
