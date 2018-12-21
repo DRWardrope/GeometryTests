@@ -13,15 +13,14 @@ def dot(u, v, geometry="spherical"):
     return u.T.dot(metric.dot(v))
  
 
-def project_to_tangent_old(point_on_manifold, displacement, geometry="spherical"):
+def project_to_tangent_slow(point_on_manifold, displacement, geometry="spherical"):
     '''
         Given a displacement, project onto tangent space defined at point_on_manifold
         Inputs: point_on_manifold, an n-D vector in embedding space
                 displacement, an n-D vector of the displacement from point_on_manifold
         Outputs: n-D vector in tangent space
         NOTE: This explicitly calculates <x,x>, which is somewhat wasteful and a potential
-            source of inaccuracy, since <x, x> = 1 if x is on spherical manifold, or =-1 on
-            hyperboloid
+            source of inaccuracy, but it does ensure that any geometry can be considered.
     '''
     print("project_to_tangent: point_on_manifold = {}, displacement = {}, geometry = {}".format(
             point_on_manifold, 
@@ -33,44 +32,54 @@ def project_to_tangent_old(point_on_manifold, displacement, geometry="spherical"
     xp_dot = dot(point_on_manifold, displacement, geometry)
     xx_dot = dot(point_on_manifold, point_on_manifold, geometry)
 #    print("project_to_tangent: xp_norm = {}, xx_norm = {}".format(xp_dot, xx_dot))
-    return displacement - (xp_dot/xx_dot)*point_on_manifold
+    return displacement - np.diag(xp_dot/xx_dot)*point_on_manifold
 
-def project_to_tangent(point_on_manifold, displacement, geometry="spherical"):
+def project_to_tangent(point_on_manifold, displacement, geometry="hyperbolic"):
     '''
         Given a displacement, project onto tangent space defined at point_on_manifold
         Inputs: point_on_manifold, an n-D vector in embedding space
                 displacement, an n-D vector of the displacement from point_on_manifold
+        NOTE: Uses pre-calculated values for <x,x>, only appropriate for Euclidean,
+               spherical and hyperboloid geometries.
     '''
- #   print("project_to_tangent: point_on_manifold = {}, displacement = {}, geometry = {}".format(
- #           point_on_manifold, 
- #           displacement,
-           # geometry
-           #)
-         #)
+    print("project_to_tangent: point_on_manifold = {}, displacement = {}, geometry = {}".format(
+            point_on_manifold,
+            displacement,
+            geometry
+           )
+         )
 
-    xp_dot = dot(point_on_manifold, displacement, geometry)
-    xx_dot = +1. #if on spherical manifold
+    xp_dot = np.diag(dot(point_on_manifold, displacement, geometry))
+    xx_dot = np.ones(xp_dot.shape)
     if geometry in "hyperbolic":
-        xx_dot = -1. #if on hyperboloid manifold
-    #print("project_to_tangent: xp_norm = {}, xx_norm = {}".format(xp_dot, xx_dot))
+        xx_dot *= -1. #if on hyperboloid manifold
     return displacement - (xp_dot/xx_dot)*point_on_manifold
-
         
-def exponential_map(v_tan, point_on_manifold, geometry="spherical"):
+def exponential_map(point_on_manifold, v_TpS, geometry="spherical"):
     '''
         Projects vector from tangent space of point_on_manifold onto manifold
         Inputs:
-                v_tan is the n-D vector in tangent space, an np.array
-                point_on_manifold is the initial n-D point on the manifold, an np.array
+                point_on_manifold is a tf.Tensor, the initial n-D point, or 
+                an array of n-D points on the manifold, 
+                v_TpS is a tf.Tensor, the n-D vector, or array of such vectors,
+                in tangent space
     '''
-    norm_v_tan = np.sqrt(dot(v_tan, v_tan, geometry))
-    #print("exponential_map: norm_v_tan = ", norm_v_tan)
-    if abs(norm_v_tan.squeeze()) < 1e-8:
-        return point_on_manifold
+    norm_v_TpS = np.diag(np.sqrt(dot(v_TpS, v_TpS, geometry)))
+       
     if geometry == "spherical":
-        return np.cos(norm_v_tan)*point_on_manifold + (np.sin(norm_v_tan)/norm_v_tan)*v_tan
+        #if abs(norm_v_TpS.squeeze()) < 1e-8:
+        #    return point_on_manifold
+        #mapped_pt = tf.cond(norm_v_TpS.squeeze()) < 1e-8
+        return np.cos(norm_v_TpS)*point_on_manifold + (np.sin(norm_v_TpS)/norm_v_TpS)*v_TpS
     elif geometry == "hyperbolic":
-        return np.cosh(norm_v_tan)*point_on_manifold + (np.sinh(norm_v_tan)/norm_v_tan)*v_tan
+    #    print(norm_v_TpS)
+    #    print(np.where(np.greater(norm_v_TpS , 0.), "Y", "N"))
+        return np.where(
+                        np.greater(norm_v_TpS , 0.),
+                        np.cosh(norm_v_TpS)*point_on_manifold 
+                            + (np.sinh(norm_v_TpS)/norm_v_TpS)*v_TpS,
+                        point_on_manifold
+        )
     else:
         print("geometry = {} is not a valid option! Try 'spherical' or 'hyperbolic'".format(geometry))
 
@@ -112,3 +121,27 @@ def get_metric(dimension, geometry="euclidean"):
         return np.zeros([dimension, dimension])
 
     return metric
+
+def project_to_klein(v):
+    '''
+        Project hyperboloid points to Beltrami-Klein ball
+        Input:
+            v, a vector in ambient space coordinates, with nth dimension 'time-like'
+        Output:
+            a vector in Beltrami-Klein coordinates
+    '''
+    return (v/v[-1, :])
+
+def project_from_klein(v):
+    '''
+        Project Beltrami-Klein ball points to hyperboloid
+        Input:
+            v, a vector, or array of vectors, in ambient space coordinates, with nth dimension = 1
+        Output:
+            a vector, or array of vectors, in hyperboloid coordinates
+    '''
+    if type(v) != np.ndarray:
+        v = np.array(v)
+    coeff = 1./np.sqrt(1-v[:-1,:]**2)
+
+    return coeff*v
